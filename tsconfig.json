@@ -1,21 +1,34 @@
 {
   "compilerOptions": {
     // "composite": true,
+    // "target": "esnext",
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "declaration": true,
     "sourceMap": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": true,
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
     "esModuleInterop": true,
-    "allowImportingTsExtensions": true
+    // "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    // allow absolute paths: import {} from 'src/*'
+    "baseUrl": "./",
+    "paths": {
+      "src/*": [
+        "./src/*"
+      ],
+    }
   },
   "include": [
-    "../*.ts"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json"
   ],
   "references": []
 }
