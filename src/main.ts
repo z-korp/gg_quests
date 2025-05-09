@@ -1,26 +1,10 @@
 // import { SigningKey } from '@dojoengine/torii-wasm/node';
-import { addAddressPadding, type BigNumberish } from 'starknet';
 import { w3cwebsocket } from 'websocket';
-import {
-  KeysClause,
-  ToriiQueryBuilder,
-  createWorker,
-  init,
-  type ParsedEntity,
-  getModel,
-  HistoricalToriiQueryBuilder,
-  StandardizedQueryResult,
-} from '@dojoengine/sdk/node';
-import {
-  dojoConfig,
-  starknerDomain,
-} from './dojoConfig.js';
-import {
-  PistolsEntity,
-  PistolsHistoricalQueryBuilder,
-  PistolsToriiResponse,
-} from '@underware/pistols-sdk/pistols/node';
-import { models } from '@underware/pistols-sdk/pistols/gen';
+import { init, createWorker, SDK } from '@dojoengine/sdk/node';
+import { dojoConfig, starknerDomain } from './dojoConfig.js';
+import { PistolsSchemaType } from '@underware/pistols-sdk/pistols/node';
+import { historicalEventsListener } from './queries/historicalEvents.js';
+import type * as torii from "@dojoengine/torii-wasm/types";
 // import { env } from './env.ts';
 
 // Those lines are require so that websocket works.
@@ -29,7 +13,7 @@ global.Websocket = w3cwebsocket;
 // @ts-ignore
 global.WorkerGlobalScope = global;
 
-const sdk = await init({
+const sdk: SDK<PistolsSchemaType> = await init({
   client: {
     toriiUrl: dojoConfig.toriiUrl,
     relayUrl: dojoConfig.relayUrl,
@@ -43,49 +27,17 @@ const sdk = await init({
   // signer: SigningKey.fromSecretScalar(env.ACCOUNT_PRIVATE_KEY),
 });
 
-
 await createWorker(async () => {
   console.log('-- STARTING PISTOLS GG...');
 
-  async function onEntityUpdated({ data, error }: { data: PistolsEntity[]; error: Error | null }) {
-    if (error) {
-      console.error(error);
-      return;
-    }
-    console.log(`--- SUB data:`, data);
-    const entity = data.pop();
-    if (entity && entity.entityId !== '0x0') {
-      // do whatever you need here
-      const model = entity.models?.pistols?.PlayerActivityEvent;
-      console.log(`--- SUB model:`, model);
-    }
-  }
+  // // test queries
+  // const challenge = await getChallenge(sdk, '0x00000000000000000000000000000000000000000000000000000000000000d5');
+  // const duelist = await getDuelist(sdk, '0x00000000000000000000000000000000000000000000000000000000000000d5');
 
-  const query = new PistolsHistoricalQueryBuilder()
-    // .withClause(
-    //   KeysClause(
-    //     [models.ModelsMapping.PlayerActivityEvent],
-    //     [undefined]
-    //   ).build()
-    // )
-    .withEntityModels([
-      models.ModelsMapping.PlayerActivityEvent
-    ])
-    .includeHashedKeys();
+  const subs: torii.Subscription[] = [];
+  subs.push(
+    await historicalEventsListener(sdk)
+  );
 
-  //@ts-ignore
-  const events: PistolsToriiResponse = await sdk.getEventMessages({
-    query: query,
-  });
-  const items: PistolsEntity[] = events.getItems();
-  console.log(`Entities from worker [${items.length}]`);
-
-  const [entities, sub] = await sdk.subscribeEntityQuery({
-    query,
-    //@ts-ignore
-    callback: onEntityUpdated,
-  });
-
-  // return [];
-  return [sub];
+  return subs;
 });
