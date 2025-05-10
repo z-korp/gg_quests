@@ -1,4 +1,4 @@
-# Pistols at Dawn -- gg.xyz quests
+# Pistols at Dawn | gg.xyz quests
 
 ## Resources
 
@@ -24,5 +24,6 @@ Run the bot..
 
 ```sh
 pnpm i
-pnpm run bun
+pnpm build
+pnpm start
 ```

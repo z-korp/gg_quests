@@ -4,7 +4,7 @@
   "private": false,
   "type": "module",
   "scripts": {
-    "bun": "bun run ./dist/main.js",
+    "start": "bun run ./dist/main.js",
     "node": "echo \"--- USE BUN! ---\" && node ./dist/main.js",
     "build": "tsup"
   },
@@ -26,7 +26,11 @@
   "devDependencies": {
     "@types/node": "^22.14.1",
     "@types/websocket": "^1.0.10",
+    "bun": "^1.2.12",
     "tsup": "^8.3.5",
     "typescript": "^5.5.4"
+  },
+  "engines": {
+    "npm": "^10"
   }
 }
