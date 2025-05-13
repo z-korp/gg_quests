@@ -1,14 +1,33 @@
-import { SDK } from '@dojoengine/sdk/node';
-import { PistolsSchemaType, PistolsEntity, PistolsHistoricalQueryBuilder, PistolsToriiResponse } from '@underware/pistols-sdk/pistols/node';
-import { feltToString, parseEnumVariant } from '@underware/pistols-sdk/starknet';
-import { bigintEquals, bigintToAddress } from '@underware/pistols-sdk/utils';
-import { models, constants } from '@underware/pistols-sdk/pistols/gen';
+import {
+  ClauseBuilder,
+  HistoricalToriiQueryBuilder,
+  ParsedEntity,
+  SDK,
+  ToriiQueryBuilder,
+  ToriiResponse,
+} from '@dojoengine/sdk/node';
+import { feltToString } from '@underware/pistols-sdk/starknet';
+import { bigintToAddress } from '@underware/pistols-sdk/utils';
 import { ActionsPerPlayer } from '../gg/actions.js';
-import { getChallenge } from './getChallenge.js';
+import { ZKubeSchemaType } from 'src/main.js';
+import * as models from 'src/bindings/models.gen.js';
+import { env } from 'process';
 
-export const historicalEventsListener = async (sdk: SDK<PistolsSchemaType>) => {
+type ZKubeEntity = ParsedEntity<ZKubeSchemaType>;
 
-  async function onEntityUpdated({ data, error }: { data: PistolsEntity[]; error: Error | null }) {
+class ZKubeQueryBuilder extends ToriiQueryBuilder<ZKubeSchemaType> {}
+class ZKubeHistoricalQueryBuilder extends HistoricalToriiQueryBuilder<ZKubeSchemaType> {}
+class ZKubeClauseBuilder extends ClauseBuilder<ZKubeSchemaType> {}
+type ZKubeToriiResponse = ToriiResponse<ZKubeSchemaType>;
+
+export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
+  async function onEntityUpdated({
+    data,
+    error,
+  }: {
+    data: ZKubeEntity[];
+    error: Error | null;
+  }) {
     if (error) {
       console.error(error);
       return;
@@ -20,7 +39,10 @@ export const historicalEventsListener = async (sdk: SDK<PistolsSchemaType>) => {
     // console.log(`--- SUB data:`, data);
     const entity = data.pop();
     if (entity && entity.entityId !== '0x0') {
-      console.log(`--- HISTORICAL got:`, Object.keys(entity.models.pistols ?? {}));
+      console.log(
+        `--- HISTORICAL got:`,
+        Object.keys(entity.models.zkube ?? {})
+      );
 
       // activity events
       // {
@@ -30,41 +52,20 @@ export const historicalEventsListener = async (sdk: SDK<PistolsSchemaType>) => {
       //   timestamp: 1746824284,
       //   identifier: "0x00000000000000000000000000000000000000000000000000000000000000e4",
       // }
-      const activity = entity.models?.pistols?.PlayerActivityEvent as models.PlayerActivityEvent;
-      if (activity) {
-        const action_id = parseEnumVariant<constants.Activity>(activity.activity);
-        console.log(`--- HISTORICAL PlayerActivityEvent: [${action_id}]`, activity);
-        if (action_id === constants.Activity.TutorialFinished) {
-          actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Finish Tutorial');
-        }
-        if (action_id === constants.Activity.PackStarter) {
-          actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Claim Starter Pack');
-        }
-        if (action_id === constants.Activity.PackOpened) {
-          actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Open a Duelist Pack');
-        }
-        if (action_id === constants.Activity.ChallengeCreated) {
-          actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Challenge to a Duel');
-        }
-        if (action_id === constants.Activity.ChallengeReplied) {
-          actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Accept a Challenge');
-        }
-        if (action_id === constants.Activity.DuelistDied) {
-          actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Death of a Duelist');
-        }
-        if (action_id === constants.Activity.ChallengeResolved) {
-          const challenge = await getChallenge(sdk, activity.identifier);
-          if (
-            (challenge?.winner === 1 && bigintEquals(activity.player_address, challenge?.address_a)) ||
-            (challenge?.winner === 2 && bigintEquals(activity.player_address, challenge?.address_b))
-          ) {
-            actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Win a Duel');
-          }
-        }
+      /*const activity = entity.models?.pistols
+        ?.PlayerActivityEvent as models.PlayerActivityEvent;
+      if (activity) {*/
+      /*const action_id = parseEnumVariant<constants.Activity>(
+          activity.activity
+        );
+        console.log(
+          `--- HISTORICAL PlayerActivityEvent: [${action_id}]`,
+          activity
+        );
         // if (action_id === constants.Activity.ClaimedGift) {
         //   actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Claim a Gift');
         // }
-      }
+      }*/
 
       // trophy progression events
       // {
@@ -73,30 +74,68 @@ export const historicalEventsListener = async (sdk: SDK<PistolsSchemaType>) => {
       //   player_id: "0x0256d696f908f2748efcc6931c1bca88f269394ab80b91c691d7916f04af3d8c",
       //   count: 1,
       // }
-      const progression = entity.models?.pistols?.TrophyProgression as models.TrophyProgression;
+      const progression = entity.models?.achievement
+        ?.TrophyProgression as models.TrophyProgression;
       if (progression) {
         const action_id = feltToString(progression.task_id);
-        console.log(`--- HISTORICAL TrophyProgression [${action_id}]`, progression);
-        if (action_id === 'PerfectDodge') {
-          actionsPerPlayer.append(bigintToAddress(progression.player_id), 'Perfect Dodge');
+        console.log(
+          `--- HISTORICAL TrophyProgression [${action_id}]`,
+          progression
+        );
+
+        if (action_id === 'ComboInitiator') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'ComboInitiator'
+          );
         }
-        if (action_id === 'DodgeAndKill') {
-          actionsPerPlayer.append(bigintToAddress(progression.player_id), 'Dodge and Kill');
+        if (action_id === 'ComboExpert') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'ComboExpert'
+          );
         }
-        if (action_id === 'ShotInTheBack') {
-          actionsPerPlayer.append(bigintToAddress(progression.player_id), 'Shot in the Back');
+        if (action_id === 'ComboMaster') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'ComboMaster'
+          );
         }
-        if (action_id === 'ShotAtTheBack') {
-          actionsPerPlayer.append(bigintToAddress(progression.player_id), 'Shot at the Back');
+        if (action_id === 'TripleThreat') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'TripleThreat'
+          );
         }
-        if (action_id === 'BloodBath') {
-          actionsPerPlayer.append(bigintToAddress(progression.player_id), 'Blood Bath');
+        if (action_id === 'SixShooter') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'SixShooter'
+          );
         }
-        if (action_id === 'Seppuku') {
-          actionsPerPlayer.append(bigintToAddress(progression.player_id), 'Commit Seppuku');
+        if (action_id === 'NineLives') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'NineLives'
+          );
         }
-        if (action_id === 'DoubleSeppuku') {
-          actionsPerPlayer.append(bigintToAddress(progression.player_id), 'Double Seppuku');
+        if (action_id === 'GameBeginner') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'GameBeginner'
+          );
+        }
+        if (action_id === 'GameExperienced') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'GameExperienced'
+          );
+        }
+        if (action_id === 'GameVeteran') {
+          actionsPerPlayer.append(
+            bigintToAddress(progression.player_id),
+            'GameVeteran'
+          );
         }
       }
     }
@@ -105,19 +144,16 @@ export const historicalEventsListener = async (sdk: SDK<PistolsSchemaType>) => {
     actionsPerPlayer.push();
   }
 
-  const query: PistolsHistoricalQueryBuilder = new PistolsHistoricalQueryBuilder()
-    .withEntityModels([
-      'pistols-PlayerActivityEvent',
-      'pistols-TrophyProgression',
-    ])
+  const query: ZKubeHistoricalQueryBuilder = new ZKubeHistoricalQueryBuilder()
+    .withEntityModels([`${env.NAMESPACE}-TrophyProgression`])
     .withDirection('Backward')
-    .withLimit(1)
+    .withLimit(1);
 
   //@ts-ignore
-  const events: PistolsToriiResponse = await sdk.getEventMessages({
+  const events: ZKubeToriiResponse = await sdk.getEventMessages({
     query: query,
   });
-  const items: PistolsEntity[] = events.getItems();
+  const items: ZKubeEntity[] = events.getItems();
   console.log(`Historical intitial events [${items.length}]`);
 
   const [entities, sub] = await sdk.subscribeEventQuery({
