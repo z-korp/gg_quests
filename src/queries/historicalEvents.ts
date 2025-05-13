@@ -84,60 +84,61 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
           progression
         );
 
-        if (action_id === 'ComboInitiator') {
+        // CHAINING
+        if (action_id === 'CHAINING0') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'ComboInitiator'
+            'clear_lines_in_one_combo_3'
           );
         }
-        if (action_id === 'ComboExpert') {
+        if (action_id === 'CHAINING1') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'ComboExpert'
+            'clear_lines_in_one_combo_6'
           );
         }
-        if (action_id === 'ComboMaster') {
+        if (action_id === 'CHAINING2') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'ComboMaster'
+            'clear_lines_in_one_combo_9'
           );
         }
-        if (action_id === 'TripleThreat') {
+        if (action_id === 'MASTERING0') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'TripleThreat'
+            'total_combo_in_one_game_above_50'
           );
         }
-        if (action_id === 'SixShooter') {
+        if (action_id === 'MASTERING1') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'SixShooter'
+            'total_combo_in_one_game_above_150'
           );
         }
-        if (action_id === 'NineLives') {
+        if (action_id === 'MASTERING2') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'NineLives'
+            'total_combo_in_one_game_above_250'
           );
         }
-        if (action_id === 'GameBeginner') {
+        if (action_id === 'PLAYING0') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'GameBeginner'
+            'play_game'
           );
         }
-        if (action_id === 'GameExperienced') {
+        /*if (action_id === 'PLAYING1') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
             'GameExperienced'
           );
         }
-        if (action_id === 'GameVeteran') {
+        if (action_id === 'PLAYING2') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
             'GameVeteran'
           );
-        }
+        }*/
       }
     }
 
