@@ -240,6 +240,34 @@ export interface Task {
   description: string;
 }
 
+// Type definition for `zkube::events::StartGame` struct
+export interface StartGame {
+  player: string;
+  timestamp: BigNumberish;
+  game_id: BigNumberish;
+}
+
+// Type definition for `zkube::events::StartGameValue` struct
+export interface StartGameValue {
+  timestamp: BigNumberish;
+  game_id: BigNumberish;
+}
+
+// Type definition for `zkube::events::UseBonus` struct
+export interface UseBonus {
+  player: string;
+  timestamp: BigNumberish;
+  game_id: BigNumberish;
+  bonus: BonusEnum;
+}
+
+// Type definition for `zkube::events::UseBonusValue` struct
+export interface UseBonusValue {
+  timestamp: BigNumberish;
+  game_id: BigNumberish;
+  bonus: BonusEnum;
+}
+
 // Type definition for `zkube::types::difficulty::Difficulty` enum
 export const difficulty = [
   'None',
@@ -255,6 +283,11 @@ export const difficulty = [
 ] as const;
 export type Difficulty = { [key in (typeof difficulty)[number]]: string };
 export type DifficultyEnum = CairoCustomEnum;
+
+// Type definition for `zkube::types::bonus::Bonus` enum
+export const bonus = ['None', 'Hammer', 'Totem', 'Wave'] as const;
+export type Bonus = { [key in (typeof bonus)[number]]: string };
+export type BonusEnum = CairoCustomEnum;
 
 export interface SchemaType extends ISchemaType {
   tournaments: {
@@ -283,6 +316,10 @@ export interface SchemaType extends ISchemaType {
     GameSeed: GameSeed;
     GameSeedValue: GameSeedValue;
     GameValue: GameValue;
+    StartGame: StartGame;
+    StartGameValue: StartGameValue;
+    UseBonus: UseBonus;
+    UseBonusValue: UseBonusValue;
   };
   achievement: {
     TrophyCreation: TrophyCreation;
@@ -461,6 +498,36 @@ export const schema: SchemaType = {
       totem_used: 0,
       over: false,
     },
+    StartGame: {
+      player: '',
+      timestamp: 0,
+      game_id: 0,
+    },
+    StartGameValue: {
+      timestamp: 0,
+      game_id: 0,
+    },
+    UseBonus: {
+      player: '',
+      timestamp: 0,
+      game_id: 0,
+      bonus: new CairoCustomEnum({
+        None: '',
+        Hammer: undefined,
+        Totem: undefined,
+        Wave: undefined,
+      }),
+    },
+    UseBonusValue: {
+      timestamp: 0,
+      game_id: 0,
+      bonus: new CairoCustomEnum({
+        None: '',
+        Hammer: undefined,
+        Totem: undefined,
+        Wave: undefined,
+      }),
+    },
   },
   achievement: {
     TrophyCreation: {
@@ -532,6 +599,11 @@ export enum ModelsMapping {
   GameSeedValue = 'zkube-GameSeedValue',
   GameValue = 'zkube-GameValue',
   Difficulty = 'zkube-Difficulty',
+  StartGame = 'zkube-StartGame',
+  StartGameValue = 'zkube-StartGameValue',
+  UseBonus = 'zkube-UseBonus',
+  UseBonusValue = 'zkube-UseBonusValue',
+  Bonus = 'zkube-Bonus',
   TrophyCreation = 'achievement-TrophyCreation',
   TrophyCreationValue = 'achievement-TrophyCreationValue',
   TrophyProgression = 'achievement-TrophyProgression',

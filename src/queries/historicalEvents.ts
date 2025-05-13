@@ -8,7 +8,7 @@ import {
 } from '@dojoengine/sdk/node';
 import { feltToString } from '@underware/pistols-sdk/starknet';
 import { bigintToAddress } from '@underware/pistols-sdk/utils';
-import { ActionsPerPlayer } from '../gg/actions.js';
+import { Actions, ActionsPerPlayer } from '../gg/actions.js';
 import { ZKubeSchemaType } from 'src/main.js';
 import * as models from 'src/bindings/models.gen.js';
 import { env } from 'process';
@@ -53,20 +53,37 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
       //   timestamp: 1746824284,
       //   identifier: "0x00000000000000000000000000000000000000000000000000000000000000e4",
       // }
-      /*const activity = entity.models?.pistols
-        ?.PlayerActivityEvent as models.PlayerActivityEvent;
-      if (activity) {*/
-      /*const action_id = parseEnumVariant<constants.Activity>(
-          activity.activity
+      const startGame = entity.models?.zkube_budo_v1_1_0
+        ?.StartGame as models.StartGame;
+      if (startGame) {
+        console.log(`--- HISTORICAL StartGameEvent:`, startGame);
+        actionsPerPlayer.append(
+          bigintToAddress(startGame.player),
+          Actions.StartGame
         );
-        console.log(
-          `--- HISTORICAL PlayerActivityEvent: [${action_id}]`,
-          activity
-        );
-        // if (action_id === constants.Activity.ClaimedGift) {
-        //   actionsPerPlayer.append(bigintToAddress(activity.player_address), 'Claim a Gift');
-        // }
-      }*/
+      }
+
+      const useBonus = entity.models?.zkube_budo_v1_1_0
+        ?.UseBonus as models.UseBonus;
+      if (useBonus) {
+        console.log(`--- HISTORICAL UseBonusEvent:`, useBonus);
+        if (useBonus.bonus.activeVariant() === 'Hammer') {
+          actionsPerPlayer.append(
+            bigintToAddress(useBonus.player),
+            Actions.UseHammer
+          );
+        } else if (useBonus.bonus.activeVariant() === 'Totem') {
+          actionsPerPlayer.append(
+            bigintToAddress(useBonus.player),
+            Actions.UseTotem
+          );
+        } else if (useBonus.bonus.activeVariant() === 'Wave') {
+          actionsPerPlayer.append(
+            bigintToAddress(useBonus.player),
+            Actions.UseWave
+          );
+        }
+      }
 
       // trophy progression events
       // {
@@ -88,46 +105,46 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
         if (action_id === 'CHAINING0') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'clear_lines_in_one_combo_3'
+            Actions.ClearLinesInOneCombo3
           );
         }
         if (action_id === 'CHAINING1') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'clear_lines_in_one_combo_6'
+            Actions.ClearLinesInOneCombo6
           );
         }
         if (action_id === 'CHAINING2') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'clear_lines_in_one_combo_9'
+            Actions.ClearLinesInOneCombo9
           );
         }
         if (action_id === 'MASTERING0') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'total_combo_in_one_game_above_50'
+            Actions.TotalComboInOneGameAbove50
           );
         }
         if (action_id === 'MASTERING1') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'total_combo_in_one_game_above_150'
+            Actions.TotalComboInOneGameAbove150
           );
         }
         if (action_id === 'MASTERING2') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'total_combo_in_one_game_above_250'
+            Actions.TotalComboInOneGameAbove250
           );
         }
-        if (action_id === 'PLAYING0') {
+        /*if (action_id === 'PLAYING0') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
             'play_game'
           );
         }
-        /*if (action_id === 'PLAYING1') {
+        if (action_id === 'PLAYING1') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
             'GameExperienced'
@@ -147,7 +164,11 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
   }
 
   const query: ZKubeHistoricalQueryBuilder = new ZKubeHistoricalQueryBuilder()
-    .withEntityModels([`${env.NAMESPACE}-TrophyProgression`])
+    .withEntityModels([
+      `${env.NAMESPACE}-TrophyProgression`,
+      `${env.NAMESPACE}-StartGame`,
+      `${env.NAMESPACE}-UseBonus`,
+    ])
     .withDirection('Backward')
     .withLimit(1);
 
