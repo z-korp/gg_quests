@@ -39,9 +39,10 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
     // console.log(`--- SUB data:`, data);
     const entity = data.pop();
     if (entity && entity.entityId !== '0x0') {
+      console.log(`--- HISTORICAL got:`, entity);
       console.log(
         `--- HISTORICAL got:`,
-        Object.keys(entity.models.zkube ?? {})
+        Object.keys(entity.models.zkube_budo_v1_1_0 ?? {})
       );
 
       // activity events
@@ -74,7 +75,7 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
       //   player_id: "0x0256d696f908f2748efcc6931c1bca88f269394ab80b91c691d7916f04af3d8c",
       //   count: 1,
       // }
-      const progression = entity.models?.achievement
+      const progression = entity.models?.zkube_budo_v1_1_0
         ?.TrophyProgression as models.TrophyProgression;
       if (progression) {
         const action_id = feltToString(progression.task_id);
