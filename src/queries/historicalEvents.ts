@@ -39,7 +39,6 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
     // console.log(`--- SUB data:`, data);
     const entity = data.pop();
     if (entity && entity.entityId !== '0x0') {
-      console.log(`--- HISTORICAL got:`, entity);
       console.log(
         `--- HISTORICAL got:`,
         Object.keys(entity.models.zkube_budo_v1_1_0 ?? {})
@@ -67,17 +66,17 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
         ?.UseBonus as models.UseBonus;
       if (useBonus) {
         console.log(`--- HISTORICAL UseBonusEvent:`, useBonus);
-        if (useBonus.bonus.activeVariant() === 'Hammer') {
+        if ((useBonus.bonus as unknown as string) === 'Hammer') {
           actionsPerPlayer.append(
             bigintToAddress(useBonus.player),
             Actions.UseHammer
           );
-        } else if (useBonus.bonus.activeVariant() === 'Totem') {
+        } else if ((useBonus.bonus as unknown as string) === 'Totem') {
           actionsPerPlayer.append(
             bigintToAddress(useBonus.player),
             Actions.UseTotem
           );
-        } else if (useBonus.bonus.activeVariant() === 'Wave') {
+        } else if ((useBonus.bonus as unknown as string) === 'Wave') {
           actionsPerPlayer.append(
             bigintToAddress(useBonus.player),
             Actions.UseWave
