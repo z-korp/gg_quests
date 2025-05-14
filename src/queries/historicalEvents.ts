@@ -137,24 +137,25 @@ export const historicalEventsListener = async (sdk: SDK<ZKubeSchemaType>) => {
             Actions.TotalComboInOneGameAbove250
           );
         }
-        /*if (action_id === 'PLAYING0') {
+
+        if (action_id === 'SCORING0') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'play_game'
+            Actions.TotalScoreInOneGameAbove100
           );
         }
-        if (action_id === 'PLAYING1') {
+        if (action_id === 'SCORING1') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'GameExperienced'
+            Actions.TotalScoreInOneGameAbove300
           );
         }
-        if (action_id === 'PLAYING2') {
+        if (action_id === 'SCORING2') {
           actionsPerPlayer.append(
             bigintToAddress(progression.player_id),
-            'GameVeteran'
+            Actions.TotalScoreInOneGameAbove800
           );
-        }*/
+        }
       }
     }
 
