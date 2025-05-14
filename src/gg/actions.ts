@@ -1,7 +1,7 @@
 import { pushActions } from './push.js';
 
 export enum Actions {
-  StartGame = 'start_game',
+  StartGame = 'play_game',
   UseHammer = 'use_hammer',
   UseTotem = 'use_totem',
   UseWave = 'use_wave',
